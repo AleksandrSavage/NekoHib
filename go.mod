@@ -1,4 +1,4 @@
-module NekoHib
+module NekoSleep
 
 go 1.26.1
 
