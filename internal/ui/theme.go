@@ -42,7 +42,13 @@ func (c *customTheme) Icon(name fyne.ThemeIconName) fyne.Resource {
 }
 
 func (c *customTheme) Size(name fyne.ThemeSizeName) float32 {
-	if name == theme.SizeNameText { return 20 }
-	if name == theme.SizeNameHeadingText { return 60 }
-	return c.defaultTheme.Size(name)
+    // 1. Делаем отступы внутри кнопок и списков меньше (по умолчанию там 4)
+    if name == theme.SizeNameInnerPadding { return 2 }
+    // 2. Делаем отступы между элементами интерфейса меньше
+    if name == theme.SizeNamePadding { return 2 }
+    // Твои настройки текста (оставляем как было)
+    if name == theme.SizeNameText { return 20 }
+    if name == theme.SizeNameHeadingText { return 60 }
+    
+    return c.defaultTheme.Size(name)
 }
