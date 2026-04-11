@@ -2,6 +2,7 @@ package main
 
 import (
 	"NekoSleep/internal/ui"
+	"NekoSleep/internal/locker"
 )
 
 func main() {
@@ -13,6 +14,8 @@ func main() {
 	 	resourceKittengreetPng,
 		
 	)
-
+	// Тестируем локер, передавая ему ту же картинку котенка
+	locker.Show(resourceKittengreetPng)
+	
 	App.Run()
 }

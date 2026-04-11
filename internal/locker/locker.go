@@ -1,0 +1,177 @@
+package locker
+
+import (
+	"fmt"
+	"image/color"
+	"os/exec"
+	"strconv"
+
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/driver/desktop"
+	"fyne.io/fyne/v2/theme"
+	"fyne.io/fyne/v2/widget"
+
+	"NekoSleep/internal/config"
+)
+
+// ==========================================
+// НАША КАСТОМНАЯ КНОПКА ВЫКЛЮЧЕНИЯ
+// ==========================================
+type customButton struct {
+	widget.BaseWidget
+	bg         *canvas.Rectangle
+	content    *fyne.Container
+	baseColor  color.Color
+	hoverColor color.Color
+	onTapped   func()
+}
+
+func newCustomButton(text string, iconRes fyne.Resource, action func()) *customButton {
+	b := &customButton{
+		baseColor:  color.RGBA{R: 130, G: 200, B: 130, A: 255}, // Легкий, приятный зеленый
+		hoverColor: color.RGBA{R: 100, G: 170, B: 100, A: 255}, // Чуть более темный зеленый для наведения
+		onTapped:   action,
+	}
+
+	b.bg = canvas.NewRectangle(b.baseColor)
+	b.bg.CornerRadius = 6 // Слегка закругляем края для красоты
+
+	// Делаем текст черным, чтобы он хорошо читался на светлом зеленом фоне
+	lbl := canvas.NewText(text, color.Black)
+	lbl.TextStyle.Bold = true
+	lbl.Alignment = fyne.TextAlignCenter
+
+	// Настраиваем иконку
+	ico := canvas.NewImageFromResource(iconRes)
+	ico.FillMode = canvas.ImageFillContain
+	ico.SetMinSize(fyne.NewSize(20, 20))
+
+	// Упаковываем иконку и текст вместе
+	b.content = container.NewCenter(container.NewHBox(ico, lbl))
+
+	b.ExtendBaseWidget(b)
+	return b
+}
+
+// CreateRenderer отрисовывает кнопку (фон + контент)
+func (b *customButton) CreateRenderer() fyne.WidgetRenderer {
+	return widget.NewSimpleRenderer(container.NewStack(b.bg, b.content))
+}
+
+// Обработка клика
+func (b *customButton) Tapped(_ *fyne.PointEvent) {
+	if b.onTapped != nil {
+		b.onTapped()
+	}
+}
+func (b *customButton) TappedSecondary(_ *fyne.PointEvent) {}
+
+// Обработка наведения мыши (Hover)
+func (b *customButton) MouseIn(_ *desktop.MouseEvent) {
+	b.bg.FillColor = b.hoverColor
+	b.bg.Refresh()
+}
+func (b *customButton) MouseMoved(_ *desktop.MouseEvent) {}
+func (b *customButton) MouseOut() {
+	b.bg.FillColor = b.baseColor
+	b.bg.Refresh()
+}
+
+
+// ==========================================
+// ЛОГИКА ЭКРАНА БЛОКИРОВКИ
+// ==========================================
+
+// Show принимает картинку котенка и запускает экран блокировки
+func Show(sleepImg fyne.Resource) {
+	a := fyne.CurrentApp()
+	if a == nil {
+		a = app.New()
+	}
+
+	w := a.NewWindow("NekoSleep - SleepenTime")
+
+	w.SetFullScreen(true)
+
+	w.SetCloseIntercept(func() {
+		fmt.Println("Попытка побега пресечена! Иди спать.")
+	})
+
+	bgColor := color.RGBA{R: 26, G: 26, B: 46, A: 255}
+	bg := canvas.NewRectangle(bgColor)
+
+	img := canvas.NewImageFromResource(sleepImg)
+	img.FillMode = canvas.ImageFillContain
+	img.SetMinSize(fyne.NewSize(250, 250))
+
+	sleepTitle := widget.NewLabel("Shhh, the kitten is already asleep.")
+	sleepTitle.TextStyle = fyne.TextStyle{Bold: true}
+
+	sleepSubtitle := widget.NewLabel("You're tired. Take a break.")
+
+	data, err := config.Load()
+	if err != nil {
+		fmt.Println("Config read error:", err)
+		return
+	}
+
+	cyclesLeft, _ := strconv.Atoi(data.Cycles)
+
+	info := widget.NewLabel(fmt.Sprintf("Prolongation left: %d", cyclesLeft))
+
+	// Кнопка продления времени (остается стандартной)
+	var unlockBtn *widget.Button
+	unlockBtn = widget.NewButton("I need a minute...", func() {
+		if cyclesLeft > 0 {
+			cyclesLeft--
+			data.Cycles = strconv.Itoa(cyclesLeft)
+
+			currentHour, _ := strconv.Atoi(data.Hour)
+			nextHour := (currentHour + 1) % 24
+			data.Hour = fmt.Sprintf("%02d", nextHour)
+
+			config.Save(data)
+
+			fmt.Printf("🔓 Доступ продлен до %s:%s. Осталось: %d\n", data.Hour, data.Minute, cyclesLeft)
+			w.Close()
+		}
+	})
+
+	if cyclesLeft <= 0 {
+		unlockBtn.Disable()
+		unlockBtn.SetText("Prolongations are over 😿")
+	}
+
+	// Наша новая зеленая кнопка выключения Windows!
+	shutdownBtn := newCustomButton("Shut down PC", theme.LogoutIcon(), func() {
+		exec.Command("shutdown", "/s", "/t", "0").Run()
+	})
+
+	// Задаем одинаковый размер обеим кнопкам
+	sizedUnlockBtn := container.NewGridWrap(fyne.NewSize(250, 40), unlockBtn)
+	sizedShutdownBtn := container.NewGridWrap(fyne.NewSize(250, 40), shutdownBtn)
+
+	// Собираем всё в колонку
+	contentBox := container.NewVBox(
+		container.NewCenter(img),
+		container.NewCenter(sleepTitle),
+		container.NewCenter(sleepSubtitle),
+
+		widget.NewLabel(""), 
+
+		container.NewCenter(info),
+		container.NewCenter(sizedUnlockBtn),
+		
+		widget.NewLabel(""), // Отступ между кнопками
+		
+		container.NewCenter(sizedShutdownBtn),
+	)
+
+	content := container.NewCenter(contentBox)
+	w.SetContent(container.NewStack(bg, content))
+
+	w.Show()
+}

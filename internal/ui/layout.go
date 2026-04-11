@@ -15,7 +15,7 @@ import (
 
 func buildMainLayout(kitten_greet fyne.Resource, w fyne.Window) fyne.CanvasObject {
 
-	mainWrapper := container.NewMax()
+	mainWrapper := container.NewStack()
 
 	var makeEditScreen func() fyne.CanvasObject
 	var makeSavedScreen func(data *config.SleepData) fyne.CanvasObject
@@ -101,7 +101,7 @@ func buildMainLayout(kitten_greet fyne.Resource, w fyne.Window) fyne.CanvasObjec
 		cycleSelect.SetSelected("1")
 
 		smallSelectWrapper := container.NewGridWrap(fyne.NewSize(70, 35), cycleSelect)
-		infoIcon := newHoverIcon(theme.InfoIcon(), "How many times you can\n unlock your screen.", w.Canvas())
+		infoIcon := newHoverIcon(theme.InfoIcon(), "How many times can you prolong\n your session by 1 hour", w.Canvas())
 		infoWrapper := container.NewGridWrap(fyne.NewSize(24, 24), infoIcon)
 		bottomRightRow := container.NewHBox(layout.NewSpacer(), infoWrapper, smallSelectWrapper)
 

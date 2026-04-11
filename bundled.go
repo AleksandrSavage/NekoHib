@@ -35,3 +35,10 @@ var resourceKittengreetPng = &fyne.StaticResource{
 	StaticName:    "assets/images/kitten_greet.png",
 	StaticContent: resourceKittengreetPngData,
 }
+
+//go:embed assets/images/kitten_asleep.png
+var resourceKittenasleepPngData []byte
+var resourceKittenasleepPng = &fyne.StaticResource{
+	StaticName:    "assets/images/kitten_asleep.png",
+	StaticContent: resourceKittenasleepPngData,
+}
