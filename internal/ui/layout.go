@@ -8,25 +8,25 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"fyne.io/fyne/v2/theme"
 
 	"NekoSleep/internal/config"
 )
 
-func buildMainLayout(kitten_greet fyne.Resource) fyne.CanvasObject {
+func buildMainLayout(kitten_greet fyne.Resource, w fyne.Window) fyne.CanvasObject {
 
-	// --- 1. Шапка: Текст + Картинка (Мы восстановили размер котенка 40x40) ---
+	// --- 1 ---
 	helloText := widget.NewRichTextFromMarkdown("# Good night")
 	
 	img := canvas.NewImageFromResource(kitten_greet)
 	img.FillMode = canvas.ImageFillContain
-	// Устанавливаем размер, как у исходника. Чтобы текст встал вровень,
-	// тебе нужно увеличить шрифт через настройки темы в theme.go.
+
 	img.SetMinSize(fyne.NewSize(80, 80)) 
 	
 	headerRow := container.NewCenter(container.NewHBox(helloText, img))
 
 
-	// --- 2. Данные для списков времени ---
+	// --- 2 ---
 	var hours, minutes []string
 	for i := 0; i < 24; i++ {
 		hours = append(hours, fmt.Sprintf("%02d", i))
@@ -36,27 +36,19 @@ func buildMainLayout(kitten_greet fyne.Resource) fyne.CanvasObject {
 	}
 
 
-	// --- 3. Текст результата (Сделаем его жирным и по центру) ---
-	resultLabel := widget.NewLabel("Выбранное время: 00:00")
-	resultLabel.TextStyle = fyne.TextStyle{Bold: true}
-	resultLabel.Alignment = fyne.TextAlignCenter 
+	// --- 3 ---
 
 	currentHour, currentMinute, currentCycle := "00", "00", "1"
-	updateTimeDisplay := func() {
-		resultLabel.SetText(fmt.Sprintf("Выбранное время: %s:%s", currentHour, currentMinute))
-	}
 
 
-	// --- 4. Списки времени (УБРАЛИ СЕПАРАТОРЫ И ДВОЕТОЧИЕ) ---
+	// --- 4 ---
 	hourSelect := widget.NewSelect(hours, func(selected string) {
 		currentHour = selected
-		updateTimeDisplay()
 	})
 	hourSelect.SetSelected("00")
 
 	minuteSelect := widget.NewSelect(minutes, func(selected string) {
 		currentMinute = selected
-		updateTimeDisplay()
 	})
 	minuteSelect.SetSelected("00")
 
@@ -64,20 +56,17 @@ func buildMainLayout(kitten_greet fyne.Resource) fyne.CanvasObject {
 	timeSelectionRow := container.NewCenter(container.NewHBox(questionText, hourSelect, minuteSelect))
 
 
-	// --- 5. КНОПКА (По центру) ---
-	calcButton := widget.NewButton("Рассчитать", func() {
+	// --- 5 ---
+	calcButton := widget.NewButton("save", func() {
 		
-		// 1. Собираем выбранные данные в структуру из пакета config
 		data := &config.SleepData{
 			Hour:   currentHour,
 			Minute: currentMinute,
 			Cycles: currentCycle,
 		}
 
-		// 2. Отправляем на сохранение
 		err := config.Save(data)
 		
-		// 3. Проверяем результат
 		if err != nil {
 			fmt.Println("❌ Ошибка сохранения:", err)
 		} else {
@@ -87,7 +76,7 @@ func buildMainLayout(kitten_greet fyne.Resource) fyne.CanvasObject {
 	buttonRow := container.NewCenter(calcButton)
 
 
-	// --- 6. СПИСОК (От 1 до 5 в правом нижнем углу) ---
+	// --- 6 ---
 	var cycleOptions []string
 	for i := 1; i <= 5; i++ {
 		cycleOptions = append(cycleOptions, fmt.Sprint(i))
@@ -98,29 +87,31 @@ func buildMainLayout(kitten_greet fyne.Resource) fyne.CanvasObject {
 	})
 	cycleSelect.SetSelected("1") 
 
-	// ВОТ ОНА, МАГИЯ:
-	// Оборачиваем список в контейнер с жестко заданным размером.
-	// 70 - это ширина, 35 - высота (можешь поиграть с этими цифрами!)
 	smallSelectWrapper := container.NewGridWrap(fyne.NewSize(70, 35), cycleSelect)
 	
-	// И теперь кладем в правый нижний угол нашу "коробку", а не сам список
-	bottomRightRow := container.NewHBox(layout.NewSpacer(), smallSelectWrapper)
+	infoIcon := newHoverIcon(
+        theme.InfoIcon(), 
+        "How many times you can\n unlock your screen.", 
+        w.Canvas(),
+    )
+    
+    infoWrapper := container.NewGridWrap(fyne.NewSize(24, 24), infoIcon)
+
+	bottomRightRow := container.NewHBox(layout.NewSpacer(),infoWrapper, smallSelectWrapper)
 
 
-	// --- 7. ГЛАВНАЯ СБОРКА (УБРАЛИ СЕПАРАТОРЫ) ---
+	// --- 7 ---
 	content := container.NewVBox(
-		layout.NewSpacer(),      // 1. Верхняя пружина (толкает всё вниз)
+		layout.NewSpacer(),      
 		
-		headerRow,               // 2. Шапка
-		timeSelectionRow,        // 3. Вопрос со списками 
-		resultLabel,             // 4. Текст результата 
-		buttonRow,               // 5. Кнопка расчета
+		headerRow,               
+		timeSelectionRow,        
+		buttonRow,
 		
-		layout.NewSpacer(),      // 6. Нижняя пружина (вместе с верхней держит блок 2-5 по центру)
+		layout.NewSpacer(),      
 		
-		bottomRightRow,          // 7. Так как это стоит ПОСЛЕ нижней пружины, оно прилипнет к самому низу окна
+		bottomRightRow,          
 	)
 
-	// Добавляем отступы по краям окна, чтобы правый нижний список не прилипал вплотную к рамке
 	return container.NewPadded(content)
 }

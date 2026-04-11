@@ -7,8 +7,6 @@ import (
 	"fyne.io/fyne/v2/theme"
 )
 
-// customTheme реализует интерфейс fyne.Theme.
-// Сама структура скрыта (с маленькой буквы), мы будем отдавать её через функцию.
 type customTheme struct {
 	defaultTheme   fyne.Theme
 	customFont     fyne.Resource
@@ -16,7 +14,6 @@ type customTheme struct {
 	customIcon     fyne.Resource
 }
 
-// NewCustomTheme — конструктор, который принимает сгенерированные ресурсы из main
 func NewCustomTheme(font fyne.Resource, fontBold fyne.Resource, icon fyne.Resource) fyne.Theme {
 	return &customTheme{
 		defaultTheme: theme.DefaultTheme(),
@@ -36,17 +33,17 @@ func (c *customTheme) Font(style fyne.TextStyle) fyne.Resource {
 }
 
 func (c *customTheme) Icon(name fyne.ThemeIconName) fyne.Resource {
-	// Подменяем иконку Home на твоего котенка
+	
 	if name == theme.IconNameHome { return c.customIcon }
 	return c.defaultTheme.Icon(name)
 }
 
 func (c *customTheme) Size(name fyne.ThemeSizeName) float32 {
-    // 1. Делаем отступы внутри кнопок и списков меньше (по умолчанию там 4)
+    
     if name == theme.SizeNameInnerPadding { return 2 }
-    // 2. Делаем отступы между элементами интерфейса меньше
+    
     if name == theme.SizeNamePadding { return 2 }
-    // Твои настройки текста (оставляем как было)
+
     if name == theme.SizeNameText { return 20 }
     if name == theme.SizeNameHeadingText { return 60 }
     
