@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -14,6 +15,7 @@ import (
 	"NekoSleep/internal/config"
 	"NekoSleep/internal/monitor"
 )
+
 
 func buildMainLayout(kitten_greet fyne.Resource, w fyne.Window) fyne.CanvasObject {
 
@@ -40,7 +42,8 @@ func buildMainLayout(kitten_greet fyne.Resource, w fyne.Window) fyne.CanvasObjec
                         cyclesText.SetText(fmt.Sprintf("Prolongation left: %s", freshData.Cycles))
                     })
                 } else {
-                    ticker.Stop()  
+                    ticker.Stop()
+
                     monitor.Stop() 
                     
                     fyne.Do(func() {
@@ -55,7 +58,9 @@ func buildMainLayout(kitten_greet fyne.Resource, w fyne.Window) fyne.CanvasObjec
 
 		denyBtn := widget.NewButtonWithIcon("deny", theme.CancelIcon(), func() {
 			monitor.Stop()
+
 			config.Delete()
+
 			mainWrapper.Objects = []fyne.CanvasObject{makeEditScreen()}
 			mainWrapper.Refresh()
 		})
@@ -76,12 +81,15 @@ func buildMainLayout(kitten_greet fyne.Resource, w fyne.Window) fyne.CanvasObjec
 
 	makeEditScreen = func() fyne.CanvasObject {
 		helloText := widget.NewRichTextFromMarkdown("# Good night")
+
 		img := canvas.NewImageFromResource(kitten_greet)
 		img.FillMode = canvas.ImageFillContain
 		img.SetMinSize(fyne.NewSize(80, 80))
+
 		headerRow := container.NewCenter(container.NewHBox(helloText, img))
 
 		var hours, minutes []string
+
 		for i := 0; i < 24; i++ {
 			hours = append(hours, fmt.Sprintf("%02d", i))
 		}
@@ -98,6 +106,7 @@ func buildMainLayout(kitten_greet fyne.Resource, w fyne.Window) fyne.CanvasObjec
 		minuteSelect.SetSelected("00")
 
 		questionText := widget.NewLabel("when to sleep?")
+
 		timeSelectionRow := container.NewCenter(container.NewHBox(questionText, hourSelect, minuteSelect))
 
 		calcButton := widget.NewButton("save", func() {
@@ -110,10 +119,11 @@ func buildMainLayout(kitten_greet fyne.Resource, w fyne.Window) fyne.CanvasObjec
 			err := config.Save(data)
 			if err == nil {
 				monitor.Start()
+
 				mainWrapper.Objects = []fyne.CanvasObject{makeSavedScreen(data)}
 				mainWrapper.Refresh()
 			} else {
-				fmt.Println("❌ Saving error:", err)
+				dialog.ShowError(err, w)
 			}
 		})
 
@@ -121,6 +131,7 @@ func buildMainLayout(kitten_greet fyne.Resource, w fyne.Window) fyne.CanvasObjec
 		buttonRow := container.NewCenter(sizedButton)
 
 		var cycleOptions []string
+
 		for i := 1; i <= 5; i++ {
 			cycleOptions = append(cycleOptions, fmt.Sprint(i))
 		}
@@ -129,8 +140,10 @@ func buildMainLayout(kitten_greet fyne.Resource, w fyne.Window) fyne.CanvasObjec
 		cycleSelect.SetSelected("1")
 
 		smallSelectWrapper := container.NewGridWrap(fyne.NewSize(70, 35), cycleSelect)
+
 		infoIcon := newHoverIcon(theme.InfoIcon(), "How many times can you prolong\n your session by 1 hour", w.Canvas())
 		infoWrapper := container.NewGridWrap(fyne.NewSize(24, 24), infoIcon)
+
 		bottomRightRow := container.NewHBox(layout.NewSpacer(), infoWrapper, smallSelectWrapper)
 
 		content := container.NewVBox(

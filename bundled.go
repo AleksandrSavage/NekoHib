@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2"
 )
 
+
 //go:embed assets/icon/kitten_icon.ico
 var resourceKitteniconIcoData []byte
 var resourceKitteniconIco = &fyne.StaticResource{

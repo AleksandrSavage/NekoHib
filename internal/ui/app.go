@@ -5,6 +5,7 @@ import (
 	"fyne.io/fyne/v2/app"
 )
 
+
 type App struct {
 	fyneApp fyne.App
 	window  fyne.Window

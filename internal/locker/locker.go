@@ -17,6 +17,7 @@ import (
 	"NekoSleep/internal/config"
 )
 
+
 // ==============================
 //  КАСТОМНАЯ КНОПКА ВЫКЛЮЧЕНИЯ
 // ==============================
@@ -62,13 +63,16 @@ func (b *customButton) Tapped(_ *fyne.PointEvent) {
 		b.onTapped()
 	}
 }
+
 func (b *customButton) TappedSecondary(_ *fyne.PointEvent) {}
 
 func (b *customButton) MouseIn(_ *desktop.MouseEvent) {
 	b.bg.FillColor = b.hoverColor
 	b.bg.Refresh()
 }
+
 func (b *customButton) MouseMoved(_ *desktop.MouseEvent) {}
+
 func (b *customButton) MouseOut() {
 	b.bg.FillColor = b.baseColor
 	b.bg.Refresh()
@@ -103,9 +107,8 @@ func Show(sleepImg fyne.Resource, onProlong func()) {
 	sleepSubtitle := widget.NewLabel("You're tired. Take a break.")
 
 	data, err := config.Load()
-	if err != nil {
-		fmt.Println("Config read error:", err)
-		return
+	if err != nil { 
+		return 
 	}
 
 	cyclesLeft, _ := strconv.Atoi(data.Cycles)
@@ -113,25 +116,29 @@ func Show(sleepImg fyne.Resource, onProlong func()) {
 	info := widget.NewLabel(fmt.Sprintf("Prolongation left: %d", cyclesLeft))
 
 	var unlockBtn *widget.Button
+
     unlockBtn = widget.NewButton("I need a minute...", func() {
+
         if cyclesLeft > 0 {
+
             cyclesLeft--
+
             data.Cycles = strconv.Itoa(cyclesLeft)
 
             config.Save(data)
 
             if onProlong != nil { onProlong()}
 
-            fmt.Printf("🔓 can cmputing: %d\n", cyclesLeft)
             w.Close()  
         }
     })
+
 	if cyclesLeft <= 0 {
 		unlockBtn.Disable()
 		unlockBtn.SetText("Prolongations are over 😿")
 	}
 
-	shutdownBtn := newCustomButton("Shut down PC", theme.LogoutIcon(), func() {
+	shutdownBtn := newCustomButton("Shut down PC", theme.LogoutIcon(), func() {	
 		exec.Command("shutdown", "/s", "/t", "0").Run()
 	})
 

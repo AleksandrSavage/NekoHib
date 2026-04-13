@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 )
 
+
 type customTheme struct {
 	defaultTheme   fyne.Theme
 	customFont     fyne.Resource

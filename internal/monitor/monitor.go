@@ -30,11 +30,13 @@ func isTimeInSleepWindow(nowHour, nowMin, sleepHour, sleepMin int) bool {
 	if startTotal < endTotal {
 		return nowTotal >= startTotal && nowTotal < endTotal
 	}
+
 	return nowTotal >= startTotal || nowTotal < endTotal
 }
 
 
 func Start() {
+
 	if stopChan != nil {
 		return 
 	}
@@ -42,6 +44,7 @@ func Start() {
 	stopChan = make(chan bool)
 
 	go func() {
+
 		ticker := time.NewTicker(10 * time.Second)
 		defer ticker.Stop()
 

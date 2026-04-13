@@ -6,6 +6,7 @@ import (
 	"NekoSleep/internal/config"
 )
 
+
 func main() {
 	
 	App := ui.NewApp(
@@ -15,8 +16,8 @@ func main() {
 	 	resourceKittengreetPng,
 		
 	)
+	
 	monitor.Init(resourceKittenasleepPng)
-
 	if _, err := config.Load(); err == nil {
 		monitor.Start()
 	}
