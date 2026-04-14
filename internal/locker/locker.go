@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"os/exec"
 	"strconv"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -82,6 +83,7 @@ func (b *customButton) MouseOut() {
 // ==========================
 // ЛОГИКА ЭКРАНА БЛОКИРОВКИ
 // ==========================
+var focusTicker *time.Ticker
 
 func Show(sleepImg fyne.Resource, onProlong func()) {
 	a := fyne.CurrentApp()
@@ -127,6 +129,10 @@ func Show(sleepImg fyne.Resource, onProlong func()) {
 
             config.Save(data)
 
+			if focusTicker != nil {
+                focusTicker.Stop()
+            }
+
             if onProlong != nil { onProlong()}
 
             w.Close()  
@@ -162,6 +168,15 @@ func Show(sleepImg fyne.Resource, onProlong func()) {
 
 	content := container.NewCenter(contentBox)
 	w.SetContent(container.NewStack(bg, content))
+
+	w.RequestFocus() 
+
+    focusTicker = time.NewTicker(1 * time.Second)
+    go func() {
+        for range focusTicker.C {
+            w.RequestFocus()
+        }
+    }()
 
 	w.Show()
 }
