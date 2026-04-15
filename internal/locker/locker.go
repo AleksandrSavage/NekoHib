@@ -5,7 +5,6 @@ import (
 	"image/color"
 	"os/exec"
 	"strconv"
-	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -79,11 +78,11 @@ func (b *customButton) MouseOut() {
 	b.bg.Refresh()
 }
 
+var activeWindow fyne.Window
 
 // ==========================
 // ЛОГИКА ЭКРАНА БЛОКИРОВКИ
 // ==========================
-var focusTicker *time.Ticker
 
 func Show(sleepImg fyne.Resource, onProlong func()) {
 	a := fyne.CurrentApp()
@@ -92,6 +91,8 @@ func Show(sleepImg fyne.Resource, onProlong func()) {
 	}
 
 	w := a.NewWindow("NekoSleep - SleepinTime")
+	
+	activeWindow = w
 
 	w.SetFullScreen(true)
 	w.SetCloseIntercept(func() {})
@@ -128,10 +129,6 @@ func Show(sleepImg fyne.Resource, onProlong func()) {
             data.Cycles = strconv.Itoa(cyclesLeft)
 
             config.Save(data)
-
-			if focusTicker != nil {
-                focusTicker.Stop()
-            }
 			
 			StopKeyboardBlocker()
 
@@ -176,4 +173,13 @@ func Show(sleepImg fyne.Resource, onProlong func()) {
 	w.RequestFocus() 
 
 	go StartKeyboardBlocker()
+}
+
+func Wake() {
+	StopKeyboardBlocker()
+
+	if activeWindow != nil {
+        activeWindow.Close()
+        activeWindow = nil
+    }
 }

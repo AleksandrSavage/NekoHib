@@ -78,6 +78,8 @@ func Start() {
 						fyne.Do(func() {locker.Show(sleepImgCache, ProlongSession)}) 
 					}
 				} else {
+					fyne.Do(func() { locker.Wake() })
+					
 					isLockerOpen = false
 				}
 			}
