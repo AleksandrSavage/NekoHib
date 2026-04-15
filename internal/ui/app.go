@@ -15,7 +15,7 @@ type App struct {
 }
 
 func NewApp(font fyne.Resource, fontBold fyne.Resource, icon fyne.Resource, kitten_greet fyne.Resource) *App {
-	a := app.New()
+	a := app.NewWithID("dev.as.nekosleep")
 
 	a.Settings().SetTheme(NewCustomTheme(font, fontBold, icon))
 

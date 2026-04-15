@@ -88,7 +88,7 @@ var focusTicker *time.Ticker
 func Show(sleepImg fyne.Resource, onProlong func()) {
 	a := fyne.CurrentApp()
 	if a == nil {
-		a = app.New()
+		a = app.NewWithID("dev.as.nekosleep")
 	}
 
 	w := a.NewWindow("NekoSleep - SleepinTime")
@@ -174,13 +174,6 @@ func Show(sleepImg fyne.Resource, onProlong func()) {
 	w.Show()
 
 	w.RequestFocus() 
-
-    focusTicker = time.NewTicker(1 * time.Second)
-    go func() {
-        for range focusTicker.C {
-            w.RequestFocus()
-        }
-    }()
 
 	go StartKeyboardBlocker()
 }
