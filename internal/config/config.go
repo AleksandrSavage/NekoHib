@@ -4,13 +4,17 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"time"
+	"strconv"
 )
 
 
 type SleepData struct {
-	Hour   string `json:"hour"`
-	Minute string `json:"minute"`
-	Cycles string `json:"cycles"`
+	Hour         string `json:"hour"`
+	Minute       string `json:"minute"`
+	Cycles       string `json:"cycles"`
+	MaxCycles    string `json:"maxcycles"`      
+    LastReset    string `json:"last_reset"` 
 }
 
 
@@ -60,6 +64,17 @@ func Load() (*SleepData, error) {
 	if err != nil {
 		return nil, err
 	}
+	
+	now := time.Now()
+    year, week := now.ISOWeek()
+    
+    currentWeekStr := strconv.Itoa(year) + "-W" + strconv.Itoa(week)
+
+    if data.LastReset != currentWeekStr {
+        data.Cycles = data.MaxCycles
+        data.LastReset = currentWeekStr
+        Save(&data)
+    }
 
 	return &data, nil
 }

@@ -110,10 +110,16 @@ func buildMainLayout(kitten_greet fyne.Resource, w fyne.Window) fyne.CanvasObjec
 		timeSelectionRow := container.NewCenter(container.NewHBox(questionText, hourSelect, minuteSelect))
 
 		calcButton := widget.NewButton("save", func() {
+			now := time.Now()
+            year, week := now.ISOWeek()
+            currentWeekStr := fmt.Sprintf("%d-W%d", year, week)
+
 			data := &config.SleepData{
 				Hour:   currentHour,
 				Minute: currentMinute,
 				Cycles: currentCycle,
+				MaxCycles:    currentCycle, 
+            	LastReset: currentWeekStr,
 			}
 
 			err := config.Save(data)
@@ -141,7 +147,7 @@ func buildMainLayout(kitten_greet fyne.Resource, w fyne.Window) fyne.CanvasObjec
 
 		smallSelectWrapper := container.NewGridWrap(fyne.NewSize(70, 35), cycleSelect)
 
-		infoIcon := newHoverIcon(theme.InfoIcon(), "How many times can you prolong\n your session by 1 hour", w.Canvas())
+		infoIcon := newHoverIcon(theme.InfoIcon(), "How many times can you prolong\n your session by 1 hour.(updates\n in monday)", w.Canvas())
 		infoWrapper := container.NewGridWrap(fyne.NewSize(24, 24), infoIcon)
 
 		bottomRightRow := container.NewHBox(layout.NewSpacer(), infoWrapper, smallSelectWrapper)
