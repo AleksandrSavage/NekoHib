@@ -3,6 +3,7 @@ package locker
 import (
 	"syscall"
 	"unsafe"
+	
 )
 
 // системная библиотека Windows
@@ -12,7 +13,7 @@ var (
 	procUnhookWindowsHookEx = user32.NewProc("UnhookWindowsHookEx")
 	procCallNextHookEx      = user32.NewProc("CallNextHookEx")
 	procGetMessageW         = user32.NewProc("GetMessageW")
-	procGetAsyncKeyState    = user32.NewProc("GetAsyncKeyState") // Для проверки Ctrl
+	procGetAsyncKeyState    = user32.NewProc("GetAsyncKeyState") 
 )
 
 // Системные константы кодов клавиш

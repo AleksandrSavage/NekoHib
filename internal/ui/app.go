@@ -32,28 +32,31 @@ func NewApp(font fyne.Resource, fontBold fyne.Resource, icon fyne.Resource, kitt
 	}
 }
 
-func (a *App) Run() {
-	if desk, ok := a.fyneApp.(desktop.App); ok {
-        m := fyne.NewMenu("NekoSleep",
+func (a *App) Show() {
+    a.window.Show()
+}
 
+func (a *App) Run() {
+    // Настройка трея (остается как была)
+    if desk, ok := a.fyneApp.(desktop.App); ok {
+        m := fyne.NewMenu("NekoSleep",
             fyne.NewMenuItem("Show NekoSleep", func() {
                 a.window.Show() 
             }),
-			
             fyne.NewMenuItem("Quit", func() {
                 monitor.Stop()  
-
                 a.fyneApp.Quit() 
             }),
         )
-
         desk.SetSystemTrayMenu(m)
-
     }
 
+    // Перехват закрытия (скрываем вместо выхода)
     a.window.SetCloseIntercept(func() {
         a.window.Hide() 
     })
 
-	a.window.ShowAndRun()
+    // ВАЖНО: Вместо ShowAndRun пишем просто Run
+    // Это запустит приложение, но НЕ покажет окно само по себе.
+    a.fyneApp.Run()
 }

@@ -14,6 +14,7 @@ import (
 
 	"NekoSleep/internal/config"
 	"NekoSleep/internal/monitor"
+	"NekoSleep/internal/startup"
 )
 
 
@@ -59,7 +60,9 @@ func buildMainLayout(kitten_greet fyne.Resource, w fyne.Window) fyne.CanvasObjec
 		denyBtn := widget.NewButtonWithIcon("deny", theme.CancelIcon(), func() {
 			monitor.Stop()
 
-			config.Delete()
+			config.Delete()	
+
+			startup.Disable()
 
 			mainWrapper.Objects = []fyne.CanvasObject{makeEditScreen()}
 			mainWrapper.Refresh()
@@ -125,6 +128,8 @@ func buildMainLayout(kitten_greet fyne.Resource, w fyne.Window) fyne.CanvasObjec
 			err := config.Save(data)
 			if err == nil {
 				monitor.Start()
+
+				startup.Enable()
 
 				mainWrapper.Objects = []fyne.CanvasObject{makeSavedScreen(data)}
 				mainWrapper.Refresh()
